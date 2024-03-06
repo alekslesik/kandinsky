@@ -45,11 +45,11 @@ const (
 // https://fusionbrain.ai/docs/ru/doc/api-dokumentaciya/
 type Kandinsky struct {
 	// The API key for authenticating requests to the Kandinsky API.
-	key    string
+	key string
 	// The API secret for authenticating requests to the Kandinsky API.
 	secret string
 	// The current model selected for generating images, represented by the Model structure.
-	model  Model
+	model Model
 }
 
 // Model is the message from kandinsky API after auth
@@ -65,13 +65,13 @@ type Kandinsky struct {
 // ]
 type Model struct {
 	// Unique identifier of the model
-	Id      int     `json:"id"`
+	ID int `json:"id"`
 	// Name of the model
-	Name    string  `json:"name"`
+	Name string `json:"name"`
 	// Version of the model.
 	Version float32 `json:"version"`
 	// Type of tasks the model is designed for, e.g., "TEXT2IMAGE".
-	Type    string  `json:"type"`
+	Type string `json:"type"`
 }
 
 // Params for generate image
@@ -89,15 +89,15 @@ type Model struct {
 //	}
 type Params struct {
 	// Desired width of the generated image, perfect if multiple of 8.
-	Width          int    `json:"width"`
+	Width int `json:"width"`
 	// Desired height of the generated image, perfect if multiple of 8.
-	Height         int    `json:"height"`
+	Height int `json:"height"`
 	// Number of images to generate, always = 1.
-	NumImages      int    `json:"num_images"`
+	NumImages int `json:"num_images"`
 	//Type of generation, always "GENERATE".
-	Type           string `json:"type"`
+	Type string `json:"type"`
 	// Style of the generated image.
-	Style          string `json:"style"`
+	Style string `json:"style"`
 	// Negative prompts to avoid in the image generation.
 	NegativePrompt string `json:"negativePromptUnclip"`
 	// Parameters for the generation, including the Query for the image content.
@@ -114,7 +114,7 @@ type Params struct {
 //	}
 type UUID struct {
 	// The UUID of the generated image task.
-	ID     string `json:"uuid"`
+	ID string `json:"uuid"`
 	// The status of the task, e.g., "INITIAL".
 	Status string `json:"status"`
 }
@@ -132,13 +132,13 @@ type ErrResponse struct {
 	// The time at which the error occurred.
 	Timestamp string `json:"timestamp"`
 	// HTTP status code of the error.
-	Status    int    `json:"status"`
+	Status int `json:"status"`
 	// Short description of the error.
-	Error     string `json:"error"`
+	Error string `json:"error"`
 	// Detailed message about the error.
-	Message   string `json:"message"`
+	Message string `json:"message"`
 	// API endpoint at which the error occurred.
-	Path      string `json:"path"`
+	Path string `json:"path"`
 }
 
 // New creates a new instance of the Kandinsky client.
@@ -187,8 +187,7 @@ func GetImage(key, secret string, params Params) (Image, error) {
 	return i, nil
 }
 
-
-// SetModelSets the model to be used by the Kandinsky client.
+// SetModel sets the model to be used by the Kandinsky client.
 // Send auth request to url and set image UUID to Kandinsky instance from json response:
 // [
 //
@@ -236,7 +235,7 @@ func (k *Kandinsky) SetModel(url string) error {
 		return err
 	}
 
-	if m[0].Id == 0 {
+	if m[0].ID == 0 {
 		return ErrAuth
 	}
 
@@ -254,8 +253,8 @@ func (k *Kandinsky) SetModel(url string) error {
 func (k *Kandinsky) GetImageUUID(url string, p Params) (UUID, error) {
 	u := UUID{}
 
-	if k.model.Id == 0 {
-		k.model.Id = 4
+	if k.model.ID == 0 {
+		k.model.ID = 4
 	}
 
 	// marshall params to json bytes
@@ -266,7 +265,7 @@ func (k *Kandinsky) GetImageUUID(url string, p Params) (UUID, error) {
 
 	// generate command string
 	curlCommand := fmt.Sprintf(`curl --location --request POST 'https://api-key.fusionbrain.ai/key/api/v1/text2image/run' --header 'X-Key: Key %s' --header 'X-Secret: Secret %s' -F 'params=%s
-	};type=application/json' --form 'model_id="%d"'`, k.key, k.secret, string(b), k.model.Id)
+	};type=application/json' --form 'model_id="%d"'`, k.key, k.secret, string(b), k.model.ID)
 
 	// create command
 	cmd := exec.Command("sh", "-c", curlCommand)
