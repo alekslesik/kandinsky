@@ -5,14 +5,19 @@ import (
 	"os"
 )
 
+// Image represents the image data returned by the Kandinsky API.
 type Image struct {
+	// The unique identifier of the image generation task.
 	UUid     string   `json:"uuid"`
+	// The status of the image generation task.
 	Status   string   `json:"status"`
+	// A slice containing the generated images encoded in Base64.
 	Images   []string `json:"images"`
+	// Indicates whether the image has been censored.
 	Censored bool     `json:"censored"`
 }
 
-// ToByte is convert Image to []byte
+// Converts the image to a byte slice.
 func (i *Image) ToByte() ([]byte, error) {
 	l := len(i.Images[0])
 	var b = make([]byte, l)
@@ -25,7 +30,7 @@ func (i *Image) ToByte() ([]byte, error) {
 	return b, nil
 }
 
-// ToFile is convert Image to os.File
+// Converts the image to an os.File.
 func (i *Image) ToFile() (*os.File, error) {
 	f, err := os.OpenFile(".temp.png", os.O_CREATE|os.O_RDWR|os.O_TRUNC, os.ModePerm)
 	if err != nil {
@@ -45,7 +50,7 @@ func (i *Image) ToFile() (*os.File, error) {
 	return f, nil
 }
 
-// SaveTo save png image with name into path
+// SavePNGTo saves the image as a PNG file to the specified path.
 func (i *Image) SavePNGTo(name, path string) error {
 	ext := ".png"
 
@@ -68,7 +73,7 @@ func (i *Image) SavePNGTo(name, path string) error {
 	return nil
 }
 
-// SaveTo save jpg image with name into path
+// SaveJPGTo saves image as a JPG file to the specified path.
 func (i *Image) SaveJPGTo(name, path string) error {
 	ext := ".jpg"
 
