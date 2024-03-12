@@ -17,6 +17,8 @@ var (
 	ErrEmptyURL             = errors.New("kandinsky url is not exists in env or in config file")
 	ErrEmptyKey             = errors.New("kandinsky auth key is not exists in env or config file")
 	ErrEmptySecret          = errors.New("kandinsky auth secret is not exists in env or config file")
+	ErrEmptyPrompt          = errors.New("kandinsky prompt is empty ")
+	ErrEmptyUUID            = errors.New("kandinsky UUID struct is empty ")
 	ErrAuth                 = errors.New("kandinsky authentication error, check your key and secret")
 	ErrStatusNot200         = errors.New("kandinsky status is not 200")
 	ErrTaskNotCompleted     = errors.New("kandinsky the task could not be completed")
@@ -25,7 +27,6 @@ var (
 	ErrInternalServerError  = errors.New("kandinsky server error")
 	ErrUnsupportedMediaType = errors.New("kandinsky is not support format")
 	ErrBadRequest           = errors.New("kandinsky wrong request parameters or prompt too long ")
-	ErrEmptyPrompt          = errors.New("kandinsky prompt is empty ")
 )
 
 const (
@@ -57,7 +58,7 @@ const (
 type Kandinsky interface {
 	SetModel(url string) (int, error)
 	GetImageUUID(url string, p Params) (UUID, error)
-	Check(url string, u UUID) (Image, error)
+	CheckImage(url string, u UUID) (Image, error)
 }
 
 // Kandinsky struct, all fields are required
@@ -202,7 +203,7 @@ func GetImage(key, secret string, params Params) (Image, error) {
 		return i, err
 	}
 
-	i, err = k.Check(URLCHECK, u)
+	i, err = k.CheckImage(URLCHECK, u)
 	if err != nil {
 		return i, err
 	}
@@ -334,9 +335,17 @@ func (k *Kand) GetImageUUID(url string, p Params) (UUID, error) {
 	return u, nil
 }
 
-// Check image status using image UUID
-func (k *Kand) Check(url string, u UUID) (Image, error) {
+// CheckImage image status using image UUID
+func (k *Kand) CheckImage(url string, u UUID) (Image, error) {
 	image := Image{}
+
+	if url == "" {
+		return image, ErrEmptyURL
+	}
+
+	if u.ID == "" {
+		return image, ErrEmptyUUID
+	}
 
 	for {
 		// create GET request

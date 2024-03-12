@@ -11,6 +11,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -25,6 +26,8 @@ var (
 	aURL string
 	// generate image URL
 	gURL string
+	// url for check image
+	cURL string
 )
 
 // TestMain runs before that the below test functions
@@ -38,6 +41,7 @@ func TestMain(m *testing.M) {
 	secret = os.Getenv("KAND_API_SECRET")
 	aURL = os.Getenv("KAND_API_AUTH_URL")
 	gURL = os.Getenv("KAND_API_GEN_URL")
+	cURL = os.Getenv("KAND_API_CHECK_URL")
 
 	if key == "" || secret == "" {
 		log.Fatal("empty key or secret")
@@ -216,20 +220,22 @@ func TestGetImageUUID(t *testing.T) {
 	}
 
 	testCases := []struct {
-		desc	string
-		p Params
+		desc string
+		p    Params
 		want string
 	}{
 		{
 			desc: "Successful GetImageUUID",
 			p: Params{
-				Width: 1024,
-				Height: 1024,
-				NumImages: 1,
-				Type: "GENERATE",
-				Style: "KANDINSKY",
+				Width:          1024,
+				Height:         1024,
+				NumImages:      1,
+				Type:           "GENERATE",
+				Style:          "KANDINSKY",
 				NegativePrompt: "",
-				GenerateParams: struct{Query string "json:\"query\""}{
+				GenerateParams: struct {
+					Query string "json:\"query\""
+				}{
 					Query: "black cat",
 				},
 			},
@@ -238,13 +244,32 @@ func TestGetImageUUID(t *testing.T) {
 		{
 			desc: "Width or Height less than 128",
 			p: Params{
-				Width: 127,
-				Height: 127,
-				NumImages: 1,
-				Type: "GENERATE",
-				Style: "KANDINSKY",
+				Width:          127,
+				Height:         127,
+				NumImages:      1,
+				Type:           "GENERATE",
+				Style:          "KANDINSKY",
 				NegativePrompt: "",
-				GenerateParams: struct{Query string "json:\"query\""}{
+				GenerateParams: struct {
+					Query string "json:\"query\""
+				}{
+					Query: "black cat",
+				},
+			},
+			want: "status 400 Bad Request",
+		},
+		{
+			desc: "Empty Width, Height, NumImages, Type",
+			p: Params{
+				Width:          127,
+				Height:         127,
+				NumImages:      1,
+				Type:           "GENERATE",
+				Style:          "KANDINSKY",
+				NegativePrompt: "",
+				GenerateParams: struct {
+					Query string "json:\"query\""
+				}{
 					Query: "black cat",
 				},
 			},
@@ -253,13 +278,15 @@ func TestGetImageUUID(t *testing.T) {
 		{
 			desc: "NumImages more than 1",
 			p: Params{
-				Width: 1024,
-				Height: 1024,
-				NumImages: 2,
-				Type: "GENERATE",
-				Style: "KANDINSKY",
+				Width:          1024,
+				Height:         1024,
+				NumImages:      2,
+				Type:           "GENERATE",
+				Style:          "KANDINSKY",
 				NegativePrompt: "",
-				GenerateParams: struct{Query string "json:\"query\""}{
+				GenerateParams: struct {
+					Query string "json:\"query\""
+				}{
 					Query: "black cat",
 				},
 			},
@@ -268,13 +295,15 @@ func TestGetImageUUID(t *testing.T) {
 		{
 			desc: "Wrong style",
 			p: Params{
-				Width: 1024,
-				Height: 1024,
-				NumImages: 1,
-				Type: "GENERATE",
-				Style: "WRONG",
+				Width:          1024,
+				Height:         1024,
+				NumImages:      1,
+				Type:           "GENERATE",
+				Style:          "WRONG",
 				NegativePrompt: "",
-				GenerateParams: struct{Query string "json:\"query\""}{
+				GenerateParams: struct {
+					Query string "json:\"query\""
+				}{
 					Query: "black cat",
 				},
 			},
@@ -283,13 +312,15 @@ func TestGetImageUUID(t *testing.T) {
 		{
 			desc: "Wrong type",
 			p: Params{
-				Width: 1024,
-				Height: 1024,
-				NumImages: 1,
-				Type: "WRONG",
-				Style: "KANDINSKY",
+				Width:          1024,
+				Height:         1024,
+				NumImages:      1,
+				Type:           "WRONG",
+				Style:          "KANDINSKY",
 				NegativePrompt: "",
-				GenerateParams: struct{Query string "json:\"query\""}{
+				GenerateParams: struct {
+					Query string "json:\"query\""
+				}{
 					Query: "black cat",
 				},
 			},
@@ -298,13 +329,15 @@ func TestGetImageUUID(t *testing.T) {
 		{
 			desc: "Empty query",
 			p: Params{
-				Width: 1024,
-				Height: 1024,
-				NumImages: 1,
-				Type: "GENERATE",
-				Style: "KANDINSKY",
+				Width:          1024,
+				Height:         1024,
+				NumImages:      1,
+				Type:           "GENERATE",
+				Style:          "KANDINSKY",
 				NegativePrompt: "",
-				GenerateParams: struct{Query string "json:\"query\""}{
+				GenerateParams: struct {
+					Query string "json:\"query\""
+				}{
 					Query: "",
 				},
 			},
@@ -320,6 +353,80 @@ func TestGetImageUUID(t *testing.T) {
 				}
 			} else {
 				if !strings.Contains(err.Error(), tC.want) {
+					t.Errorf("want: %s, got: %s", tC.want, err)
+				}
+			}
+		})
+	}
+}
+
+// TestCheckImage common test
+func TestCheckImage(t *testing.T) {
+	k, err := New(key, secret)
+	if err != nil {
+		t.Errorf("create Kandinsky instance error > %s", err)
+	}
+
+	_, err = k.SetModel(aURL)
+	if err != nil {
+		t.Errorf("set model error > %s", err)
+	}
+
+	p := Params{
+		Width:          1024,
+		Height:         1024,
+		NumImages:      1,
+		Type:           "GENERATE",
+		Style:          "KANDINSKY",
+		NegativePrompt: "",
+		GenerateParams: struct {
+			Query string "json:\"query\""
+		}{
+			Query: "black cat",
+		},
+	}
+
+	u, err := k.GetImageUUID(gURL, p)
+	if err != nil {
+		t.Errorf("get image UUID model error > %s", err)
+	}
+
+	time.Sleep(time.Second * 15)
+
+	testCases := []struct {
+		desc string
+		url  string
+		u    UUID
+		want error
+	}{
+		{
+			desc: "Successful CheckImage",
+			url: cURL,
+			u: u,
+			want: nil,
+		},
+		{
+			desc: "Empty ULR",
+			url: "",
+			u: u,
+			want: ErrEmptyURL,
+		},
+		{
+			desc: "Empty UUID",
+			url: cURL,
+			u: UUID{},
+			want: ErrEmptyUUID,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			i, err := k.CheckImage(tC.url, tC.u)
+			if err == nil {
+				if i.Status != "DONE" {
+					t.Errorf("error status image > %s", err)
+				}
+			} else {
+				if err != tC.want {
 					t.Errorf("want: %s, got: %s", tC.want, err)
 				}
 			}
