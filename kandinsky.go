@@ -25,6 +25,7 @@ var (
 	ErrInternalServerError  = errors.New("kandinsky server error")
 	ErrUnsupportedMediaType = errors.New("kandinsky is not support format")
 	ErrBadRequest           = errors.New("kandinsky wrong request parameters or prompt too long ")
+	ErrEmptyPrompt          = errors.New("kandinsky prompt is empty ")
 )
 
 const (
@@ -41,9 +42,27 @@ const (
 	URLCHECK = "https://api-key.fusionbrain.ai/key/api/v1/text2image/status/"
 )
 
+// Generate image styles
+const (
+	// Kandinsky style
+	KANDINSKY = "KANDINSKY"
+	// Detailed photo
+	UHD = "UHD"
+	// Anime
+	ANIME = "ANIME"
+	// No style
+	DEFAULT = "DEFAULT"
+)
+
+type Kandinsky interface {
+	SetModel(url string) error
+	GetImageUUID(url string, p Params) (UUID, error)
+	Check(url string, u UUID) (Image, error)
+}
+
 // Kandinsky struct, all fields are required
 // https://fusionbrain.ai/docs/ru/doc/api-dokumentaciya/
-type Kandinsky struct {
+type Kand struct {
 	// The API key for authenticating requests to the Kandinsky API.
 	key string
 	// The API secret for authenticating requests to the Kandinsky API.
@@ -96,7 +115,11 @@ type Params struct {
 	NumImages int `json:"num_images"`
 	//Type of generation, always "GENERATE".
 	Type string `json:"type"`
-	// Style of the generated image.
+	// Style of the generated image
+	// KANDINSKY - kandinsky style
+	// UHD - detailed photo
+	// ANIME - anime
+	// DEFAULT - No style
 	Style string `json:"style"`
 	// Negative prompts to avoid in the image generation.
 	NegativePrompt string `json:"negativePromptUnclip"`
@@ -142,7 +165,7 @@ type ErrResponse struct {
 }
 
 // New creates a new instance of the Kandinsky client.
-func New(key, secret string) (*Kandinsky, error) {
+func New(key, secret string) (Kandinsky, error) {
 	if key == "" {
 		return nil, ErrEmptyKey
 	}
@@ -151,7 +174,7 @@ func New(key, secret string) (*Kandinsky, error) {
 		return nil, ErrEmptySecret
 	}
 
-	k := &Kandinsky{
+	k := &Kand{
 		key:    key,
 		secret: secret,
 		model:  Model{},
@@ -199,19 +222,21 @@ func GetImage(key, secret string, params Params) (Image, error) {
 //	}
 //
 // ]
-func (k *Kandinsky) SetModel(url string) error {
-	// create GET request
+func (k *Kand) SetModel(url string) error {
+	if url == "" {
+		return ErrEmptyURL
+	}
+
+	// create GET request, set auth headers
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return err
 	}
-	// create auth header
 	req.Header.Add("X-Key", "Key "+k.key)
 	req.Header.Add("X-Secret", "Secret "+k.secret)
 
-	// create client
+	// create client and do request to Kandinsky API
 	client := http.Client{}
-	// Do request to Kandinsky API
 	res, err := client.Do(req)
 	if err != nil {
 		return err
@@ -235,6 +260,7 @@ func (k *Kandinsky) SetModel(url string) error {
 		return err
 	}
 
+	// auth error
 	if m[0].ID == 0 {
 		return ErrAuth
 	}
@@ -250,11 +276,20 @@ func (k *Kandinsky) SetModel(url string) error {
 //		"uuid": "string",
 //		"status": "INITIAL"
 //	}
-func (k *Kandinsky) GetImageUUID(url string, p Params) (UUID, error) {
+func (k *Kand) GetImageUUID(url string, p Params) (UUID, error) {
 	u := UUID{}
 
+	// set default
 	if k.model.ID == 0 {
 		k.model.ID = 4
+	}
+
+	// set default
+	p.Type = "GENERATE"
+
+	// prompt must be not empty
+	if p.GenerateParams.Query == "" {
+		return u, ErrEmptyPrompt
 	}
 
 	// marshall params to json bytes
@@ -305,7 +340,8 @@ func (k *Kandinsky) GetImageUUID(url string, p Params) (UUID, error) {
 	return u, nil
 }
 
-func (k *Kandinsky) Check(url string, u UUID) (Image, error) {
+// Check image status using image UUID
+func (k *Kand) Check(url string, u UUID) (Image, error) {
 	image := Image{}
 
 	for {

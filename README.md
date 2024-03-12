@@ -132,6 +132,13 @@ Additionally, the package defines URLs used for various API requests:
 - `URLUUID`: The URL endpoint to initiate a new image generation task and receive a UUID for the task.
 - `URLCHECK`: The URL endpoint used to check the status of an image generation task using the task's UUID.
 
+Styles for generate images:
+
+-	`KANDINSKY`: Kandinsky style.
+-	`UHD`: Detailed photo.
+-	`ANIME`: Anime.
+-	`DEFAULT`: No style.
+
 These constants and URL endpoints are integral to the operation of the Kandinsky Go client, streamlining the process of making requests to the Kandinsky API and handling responses.
 
 
@@ -179,6 +186,7 @@ type Model struct {
 ### `Params`
 Defines parameters for generating an image.
 
+
 ```go
 type Params struct {
 	// Desired width of the generated image, perfect if multiple of 8.
@@ -190,11 +198,16 @@ type Params struct {
 	//Type of generation, always "GENERATE".
 	Type           string `json:"type"`
 	// Style of the generated image.
+	// KANDINSKY - kandinsky style
+	// UHD - detailed photo
+	// ANIME - anime
+	// DEFAULT - No style
 	Style          string `json:"style"`
 	// Negative prompts to avoid in the image generation.
 	NegativePrompt string `json:"negativePromptUnclip"`
 	// Parameters for the generation, including the Query for the image content.
 	GenerateParams struct {
+		// Requirement prompt to generate image
 		Query string `json:"query"`
 	} `json:"generateParams"`
 }
