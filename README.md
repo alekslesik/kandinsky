@@ -168,7 +168,7 @@ type Kandinsky struct {
 
 ### `Model`
 
-Represents a model provided by the Kandinsky API.
+Represents a model provided by the Kandinsky API. Return model ID.
 
 ```go
 type Model struct {

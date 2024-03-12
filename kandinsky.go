@@ -55,7 +55,7 @@ const (
 )
 
 type Kandinsky interface {
-	SetModel(url string) error
+	SetModel(url string) (int, error)
 	GetImageUUID(url string, p Params) (UUID, error)
 	Check(url string, u UUID) (Image, error)
 }
@@ -67,8 +67,8 @@ type Kand struct {
 	key string
 	// The API secret for authenticating requests to the Kandinsky API.
 	secret string
-	// The current model selected for generating images, represented by the Model structure.
-	model Model
+	// The current Model selected for generating images, represented by the Model structure.
+	Model Model
 }
 
 // Model is the message from kandinsky API after auth
@@ -177,7 +177,7 @@ func New(key, secret string) (Kandinsky, error) {
 	k := &Kand{
 		key:    key,
 		secret: secret,
-		model:  Model{},
+		Model:  Model{},
 	}
 
 	return k, nil
@@ -192,7 +192,7 @@ func GetImage(key, secret string, params Params) (Image, error) {
 		return i, err
 	}
 
-	err = k.SetModel(URLMODEL)
+	_, err = k.SetModel(URLMODEL)
 	if err != nil {
 		return i, err
 	}
@@ -210,7 +210,7 @@ func GetImage(key, secret string, params Params) (Image, error) {
 	return i, nil
 }
 
-// SetModel sets the model to be used by the Kandinsky client.
+// SetModel sets the model to be used by the Kandinsky client. Return model ID.
 // Send auth request to url and set image UUID to Kandinsky instance from json response:
 // [
 //
@@ -222,15 +222,15 @@ func GetImage(key, secret string, params Params) (Image, error) {
 //	}
 //
 // ]
-func (k *Kand) SetModel(url string) error {
+func (k *Kand) SetModel(url string) (int, error) {
 	if url == "" {
-		return ErrEmptyURL
+		return 0, ErrEmptyURL
 	}
 
 	// create GET request, set auth headers
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	req.Header.Add("X-Key", "Key "+k.key)
 	req.Header.Add("X-Secret", "Secret "+k.secret)
@@ -239,35 +239,30 @@ func (k *Kand) SetModel(url string) error {
 	client := http.Client{}
 	res, err := client.Do(req)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	defer res.Body.Close()
 
 	// check status code from received from API
 	err = checkStatusCode(res.StatusCode)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	// unmarshal response
 	m := []Model{}
 	b, err := io.ReadAll(res.Body)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	err = json.Unmarshal(b, &m)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	// auth error
-	if m[0].ID == 0 {
-		return ErrAuth
-	}
+	k.Model = m[0]
 
-	k.model = m[0]
-
-	return nil
+	return k.Model.ID, nil
 }
 
 // GetImageUUID sends a POST request with parameters to generate an image and returns the UUID.
@@ -280,8 +275,8 @@ func (k *Kand) GetImageUUID(url string, p Params) (UUID, error) {
 	u := UUID{}
 
 	// set default
-	if k.model.ID == 0 {
-		k.model.ID = 4
+	if k.Model.ID == 0 {
+		k.Model.ID = 4
 	}
 
 	// set default
@@ -300,7 +295,7 @@ func (k *Kand) GetImageUUID(url string, p Params) (UUID, error) {
 
 	// generate command string
 	curlCommand := fmt.Sprintf(`curl --location --request POST 'https://api-key.fusionbrain.ai/key/api/v1/text2image/run' --header 'X-Key: Key %s' --header 'X-Secret: Secret %s' -F 'params=%s
-	};type=application/json' --form 'model_id="%d"'`, k.key, k.secret, string(b), k.model.ID)
+	};type=application/json' --form 'model_id="%d"'`, k.key, k.secret, string(b), k.Model.ID)
 
 	// create command
 	cmd := exec.Command("sh", "-c", curlCommand)

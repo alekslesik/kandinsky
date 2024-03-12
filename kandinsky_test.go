@@ -112,19 +112,21 @@ func TestNew(t *testing.T) {
 	}
 }
 
-// TestSetModelEmptyURL tests the empty url parameter passed to the SetModel() function
-// func TestSetModelEmptyURL(t *testing.T) {
-// 	// k, err := New(key, secret)
-// 	// if err != nil {
-// 	// 	t.Errorf("create Kandinsky instance error > %s", err)
-// 	// }
+// TestSetModel do common test
+func TestSetModel(t *testing.T) {
+	k, err := New(key, secret)
+	if err != nil {
+		t.Errorf("create Kandinsky instance error > %s", err)
+	}
 
-// 	err = k.SetModel("")
-// 	if err != ErrEmptyURL {
-// 		t.Errorf("want: '%s' got: '%s'", ErrEmptyURL, err)
-// 	}
-
-// }
+	id, err := k.SetModel(aURL)
+	if err != nil {
+		t.Errorf("set model error > %s", err)
+	}
+	if id < 1 {
+		t.Errorf("set model error, wrong model id == %d ", id)
+	}
+}
 
 // TestSetModelEmptyURL tests the empty url parameter passed to the SetModel() function
 func TestSetModelURL(t *testing.T) {
@@ -151,7 +153,7 @@ func TestSetModelURL(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			err = k.SetModel(tC.url)
+			_, err = k.SetModel(tC.url)
 			fmt.Println(err.Error())
 			if err.Error() != tC.want {
 				t.Errorf("want: '%s' got: '%v'", tC.want, err)
@@ -193,7 +195,7 @@ func TestSetModelStatusCodeFromKandinsky(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			if err := tC.k.SetModel(tC.url); err != tC.e {
+			if _, err := tC.k.SetModel(tC.url); err != tC.e {
 				t.Errorf("want: '%s' got: '%v'", tC.e, err)
 			}
 		})
