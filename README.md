@@ -43,7 +43,7 @@ func main() {
         Height:         1024,
         NumImages:      1,
         Type:           "GENERATE",
-        Style:          "string",
+        Style:          "UHD",
         NegativePrompt: "",
         GenerateParams: struct{
             Query string `json:"query"`
@@ -75,7 +75,7 @@ For the API to recognize who's asking, your request needs a couple of special no
 
 Your request will be a mix of simple info and a file in a format called `multipart/form-data`. This format is perfect for when you need to send a detailed instruction book (like a file) along with your request. Here's what you put in it:
 
-- `model_id="1"`: This tells the API you're choosing model number 1 to create your image.
+- `model_id="4"`: This tells the API you're choosing model number 1 to create your image.
 - `-F 'params=...;type=application/json'`: This part is important because it's like attaching a file to an email. This "file" is written in JSON and tells the API exactly what you want your image to be about. In this case:
   - The `params` "file" tells the API you want to "GENERATE" an image.
   - Inside `params`, `generateParams` describes the image details, like `"query": "kitty"` for an image of a kitty.
@@ -102,6 +102,8 @@ curl --location --request POST 'https://api-key.fusionbrain.ai/key/api/v1/text2i
 The `kandinsky` package defines several errors to handle various scenarios of interaction with the API:
 
 - `ErrEmptyURL`: The API URL is not provided.
+- `ErrEmptyPrompt`: The API prompt provided.
+- `ErrEmptyUUID`: The API UUID provided.
 - `ErrEmptyKey`: The authentication key is not provided.
 - `ErrEmptySecret`: The authentication secret is not provided.
 - `ErrAuth`: Authentication error, indicating issues with the provided key and secret.
@@ -302,10 +304,10 @@ func (k *Kandinsky) GetImageUUID(url string, p Params) (UUID, error)
 - `Returns` a UUID struct with the task details or an error.
 
 
-### `Check`
+### `CheckImage`
 Checks the status of an image generation task.
 ```go
-func (k *Kandinsky) Check(url string, u UUID) (Image, error)
+func (k *Kandinsky) CheckImage(url string, u UUID) (Image, error)
 ```
 - `url`: The URL to check the task status.
 - `u`: The UUID of the task to check.
