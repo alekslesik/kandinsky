@@ -279,8 +279,7 @@ func (k *Kand) GetImageUUID(url string, p Params) (UUID, error) {
 		k.Model.ID = 4
 	}
 
-	// set default
-	p.Type = "GENERATE"
+	setDefaultParams(&p)
 
 	// prompt must be not empty
 	if p.GenerateParams.Query == "" {
@@ -401,4 +400,21 @@ func checkStatusCode(code int) error {
 	default:
 		return nil
 	}
+}
+
+// setDefaultParams set empty params
+func setDefaultParams(p *Params) {
+	if p.Width == 0 {
+		p.Width = 128
+	}
+
+	if p.Height == 0 {
+		p.Height = 128
+	}
+
+	if p.NumImages == 0 {
+		p.NumImages = 1
+	}
+
+	p.Type = "GENERATE"
 }

@@ -189,13 +189,17 @@ Defines parameters for generating an image.
 
 ```go
 type Params struct {
-	// Desired width of the generated image, perfect if multiple of 8.
+	// Desired width of the generated image.
+	// Optional. Default 1024. Perfect if multiple of 8. Must be more than 128.
 	Width          int    `json:"width"`
-	// Desired height of the generated image, perfect if multiple of 8.
+	// Desired height of the generated image.
+	// Optional. Default 1024. Perfect if multiple of 8. Must be more than 128.
 	Height         int    `json:"height"`
-	// Number of images to generate, always = 1.
+	// Number of images to generate.
+	// Optional. Must be equal 1.
 	NumImages      int    `json:"num_images"`
-	//Type of generation, always "GENERATE".
+	// Type of generation.
+	// Optional. Default "GENERATE" Must be equal "GENERATE".
 	Type           string `json:"type"`
 	// Style of the generated image.
 	// KANDINSKY - kandinsky style

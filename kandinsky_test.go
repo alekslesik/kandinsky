@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/joho/godotenv"
@@ -49,7 +50,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-// TestNew tests the New() function
+// TestNew common test
 func TestNew(t *testing.T) {
 	testCases := []struct {
 		desc   string
@@ -112,7 +113,7 @@ func TestNew(t *testing.T) {
 	}
 }
 
-// TestSetModel do common test
+// TestSetModel common test
 func TestSetModel(t *testing.T) {
 	k, err := New(key, secret)
 	if err != nil {
@@ -202,39 +203,126 @@ func TestSetModelStatusCodeFromKandinsky(t *testing.T) {
 	}
 }
 
-// Тем не менее, табличные тесты всё же могут быть использованы для организации некоторых частей тестирования,
-// особенно когда дело доходит до тестирования различных статус-кодов ответа или других сценариев, которые легко параметризовать.
-// Например, вы можете создать табличные тесты для проверки различных ответов сервера
-// (успешные, ошибки клиента, ошибки сервера, невалидный JSON и т.д.), используя mock HTTP-сервер или клиент.
+// TestSetModel common test
+func TestGetImageUUID(t *testing.T) {
+	k, err := New(key, secret)
+	if err != nil {
+		t.Errorf("create Kandinsky instance error > %s", err)
+	}
 
-// tests := []struct {
-// 	name           string
-// 	mockStatusCode int
-// 	mockBody       string
-// 	expectedError  error
-// }{
-// 	{"Valid Response", http.StatusOK, `[{"id":4,"name":"Kandinsky","version":3.0,"type":"TEXT2IMAGE"}]`, nil},
-// 	{"Unauthorized", http.StatusUnauthorized, ``, ErrAuth},
-// 	{"Not Found", http.StatusNotFound, ``, checkStatusCode(http.StatusNotFound)},
-// 	{"Bad Gateway", http.StatusBadGateway, ``, checkStatusCode(http.StatusBadGateway)},
-// 	{"Invalid JSON", http.StatusOK, `Invalid JSON`, json.UnmarshalTypeError{}},
-// }
+	_, err = k.SetModel(aURL)
+	if err != nil {
+		t.Errorf("set model error > %s", err)
+	}
 
-// for _, tt := range tests {
-// 	t.Run(tt.name, func(t *testing.T) {
-// 			// Настройте ваш mock HTTP-сервер или клиент здесь для возврата `tt.mockStatusCode` и `tt.mockBody`
-
-// 			// Вызовите SetModel и проверьте ожидаемый результат
-// 			k := Kandinsky{}
-// 			err := k.SetModel("mockURL")
-
-// 			// Проверка возвращаемой ошибки в зависимости от сценария
-// 			if !errors.As(err, &tt.expectedError) {
-// 					t.Errorf("Expected error %v, got %v", tt.expectedError, err)
-// 			}
-// 	})
-// }
-
-// В этом примере используется параметризация для проверки различных ответов и ожидаемых ошибок.
-// Вы должны настроить mock HTTP-сервер или клиент,
-// чтобы он возвращал соответствующие статус-коды и тела ответов в соответствии с каждым тестовым случаем.
+	testCases := []struct {
+		desc	string
+		p Params
+		want string
+	}{
+		{
+			desc: "Successful GetImageUUID",
+			p: Params{
+				Width: 1024,
+				Height: 1024,
+				NumImages: 1,
+				Type: "GENERATE",
+				Style: "KANDINSKY",
+				NegativePrompt: "",
+				GenerateParams: struct{Query string "json:\"query\""}{
+					Query: "black cat",
+				},
+			},
+			want: "",
+		},
+		{
+			desc: "Width or Height less than 128",
+			p: Params{
+				Width: 127,
+				Height: 127,
+				NumImages: 1,
+				Type: "GENERATE",
+				Style: "KANDINSKY",
+				NegativePrompt: "",
+				GenerateParams: struct{Query string "json:\"query\""}{
+					Query: "black cat",
+				},
+			},
+			want: "status 400 Bad Request",
+		},
+		{
+			desc: "NumImages more than 1",
+			p: Params{
+				Width: 1024,
+				Height: 1024,
+				NumImages: 2,
+				Type: "GENERATE",
+				Style: "KANDINSKY",
+				NegativePrompt: "",
+				GenerateParams: struct{Query string "json:\"query\""}{
+					Query: "black cat",
+				},
+			},
+			want: "status 400 Bad Request",
+		},
+		{
+			desc: "Wrong style",
+			p: Params{
+				Width: 1024,
+				Height: 1024,
+				NumImages: 1,
+				Type: "GENERATE",
+				Style: "WRONG",
+				NegativePrompt: "",
+				GenerateParams: struct{Query string "json:\"query\""}{
+					Query: "black cat",
+				},
+			},
+			want: "",
+		},
+		{
+			desc: "Wrong type",
+			p: Params{
+				Width: 1024,
+				Height: 1024,
+				NumImages: 1,
+				Type: "WRONG",
+				Style: "KANDINSKY",
+				NegativePrompt: "",
+				GenerateParams: struct{Query string "json:\"query\""}{
+					Query: "black cat",
+				},
+			},
+			want: "",
+		},
+		{
+			desc: "Empty query",
+			p: Params{
+				Width: 1024,
+				Height: 1024,
+				NumImages: 1,
+				Type: "GENERATE",
+				Style: "KANDINSKY",
+				NegativePrompt: "",
+				GenerateParams: struct{Query string "json:\"query\""}{
+					Query: "",
+				},
+			},
+			want: "kandinsky prompt is empty",
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			u, err := k.GetImageUUID(gURL, tC.p)
+			if err == nil {
+				if u.ID == "" {
+					t.Errorf("empty UUID struct > %s", err)
+				}
+			} else {
+				if !strings.Contains(err.Error(), tC.want) {
+					t.Errorf("want: %s, got: %s", tC.want, err)
+				}
+			}
+		})
+	}
+}
