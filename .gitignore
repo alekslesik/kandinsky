@@ -2,3 +2,6 @@ coverage.html
 coverage.out
 params.json
 .env
+*.png
+*.jpg
+path

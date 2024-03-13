@@ -114,6 +114,9 @@ The `kandinsky` package defines several errors to handle various scenarios of in
 - `ErrInternalServerError`: The API server encountered an internal error, suggesting a problem on the server-side.
 - `ErrUnsupportedMediaType`: The media type provided is not supported by the API, indicating an issue with the format of the request.
 - `ErrBadRequest`: The request parameters are incorrect or the prompt is too long, indicating that the client has constructed a bad request.
+- `ErrEmptyImage`: The Image instance is empty.
+- `ErrEmptyFileName`: The name to save the file  is empty.
+- `ErrEmptyFilePath`: The path to save the file is empty.
 
 These errors provide a way to handle specific issues encountered when interacting with the Kandinsky API, allowing for more granular error handling and troubleshooting in client applications.
 

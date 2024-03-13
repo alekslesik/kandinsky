@@ -5,7 +5,6 @@ package kandinsky
 // KAND_API_SECRET=your_secret
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"reflect"
@@ -28,6 +27,8 @@ var (
 	gURL string
 	// url for check image
 	cURL string
+	// correct instance of Params
+	params Params
 )
 
 // TestMain runs before that the below test functions
@@ -45,6 +46,20 @@ func TestMain(m *testing.M) {
 
 	if key == "" || secret == "" {
 		log.Fatal("empty key or secret")
+	}
+
+	params = Params{
+		Width:          1024,
+		Height:         1024,
+		NumImages:      1,
+		Type:           "GENERATE",
+		Style:          "KANDINSKY",
+		NegativePrompt: "",
+		GenerateParams: struct {
+			Query string "json:\"query\""
+		}{
+			Query: "black cat",
+		},
 	}
 
 	// run all tests
@@ -159,7 +174,6 @@ func TestSetModelURL(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			_, err = k.SetModel(tC.url)
-			fmt.Println(err.Error())
 			if err.Error() != tC.want {
 				t.Errorf("want: '%s' got: '%v'", tC.want, err)
 			}
