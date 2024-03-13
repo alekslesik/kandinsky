@@ -433,3 +433,97 @@ func TestCheckImage(t *testing.T) {
 		})
 	}
 }
+
+func TestGetImage(t *testing.T) {
+	testCases := []struct {
+		desc	string
+		key string
+		secret string
+		p Params
+		want error
+	}{
+		{
+			desc: "Successful create Image",
+			key: key,
+			secret: secret,
+			p: Params{
+				Width:          1024,
+				Height:         1024,
+				NumImages:      1,
+				Type:           "GENERATE",
+				Style:          "KANDINSKY",
+				NegativePrompt: "",
+				GenerateParams: struct {
+					Query string "json:\"query\""
+				}{
+					Query: "black cat",
+				},
+			},
+			want: nil,
+		},
+		{
+			desc: "Empty key",
+			key: "",
+			secret: secret,
+			p: Params{
+				Width:          1024,
+				Height:         1024,
+				NumImages:      1,
+				Type:           "GENERATE",
+				Style:          "KANDINSKY",
+				NegativePrompt: "",
+				GenerateParams: struct {
+					Query string "json:\"query\""
+				}{
+					Query: "black cat",
+				},
+			},
+			want: ErrEmptyKey,
+		},
+		{
+			desc: "Empty Secret",
+			key: key,
+			secret: "",
+			p: Params{
+				Width:          1024,
+				Height:         1024,
+				NumImages:      1,
+				Type:           "GENERATE",
+				Style:          "KANDINSKY",
+				NegativePrompt: "",
+				GenerateParams: struct {
+					Query string "json:\"query\""
+				}{
+					Query: "black cat",
+				},
+			},
+			want: ErrEmptySecret,
+		},
+		{
+			desc: "Empty Prompt",
+			key: key,
+			secret: secret,
+			p: Params{
+				GenerateParams: struct {
+					Query string "json:\"query\""
+				}{
+					Query: "",
+				},
+			},
+			want: ErrEmptyPrompt,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			i, err := GetImage(tC.key, tC.secret, tC.p)
+			if err == nil {
+				if i.UUID == "" {
+					t.Errorf("Image instance is empty > %v", i)
+				}
+			}
+			if err != tC.want {
+				t.Errorf("want: '%s' got: '%v'", tC.want, err)
+			}
+		})
+	}
+}
