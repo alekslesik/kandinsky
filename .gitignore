@@ -5,3 +5,4 @@ params.json
 *.png
 *.jpg
 path
+.vscode

@@ -13,7 +13,7 @@ This package provides a Go client for the Kandinsky API, enabling the generation
 
 To use the `kandinsky` package, add it to your Go project:
 
-``` go get github.com/yourusername/kandinsky ```
+``` go get github.com/alekslesik/kandinsky ```
 
 ## Usage Example
 
