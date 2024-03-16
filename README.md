@@ -32,7 +32,7 @@ func main() {
     }
 
     // Set the model
-    err = k.SetModel(kandinsky.URLMODEL)
+    err = k.SetModel()
     if err != nil {
         log.Fatalf("error setting model: %v", err)
     }
@@ -58,7 +58,11 @@ func main() {
         log.Fatalf("error getting image: %v", err)
     }
 
-    fmt.Println("Generated Image:", image)
+		// Save png image to path
+		err = image.SavePNGTo("path/")
+		if err != nil {
+        log.Fatalf("error save image to path: %v", err)
+    }
 }
 ```
 ## Info Guide
@@ -131,11 +135,6 @@ The package includes constants for handling specific HTTP response statuses from
 - `StatusInternalServerError`: Corresponds to HTTP status code 500, indicating that the server encountered an unexpected condition that prevented it from fulfilling the request.
 - `StatusUnsupportedMediaType`: Corresponds to HTTP status code 415, indicating that the media type of the requested data is not supported by the server, so the server is refusing the request.
 
-Additionally, the package defines URLs used for various API requests:
-
-- `URLMODEL`: The URL endpoint to retrieve the list of available models from the Kandinsky API.
-- `URLUUID`: The URL endpoint to initiate a new image generation task and receive a UUID for the task.
-- `URLCHECK`: The URL endpoint used to check the status of an image generation task using the task's UUID.
 
 Styles for generate images:
 
@@ -151,7 +150,6 @@ These constants and URL endpoints are integral to the operation of the Kandinsky
 
 For more detailed information about the Kandinsky API and parameters for image generation, [refer to the official Kandinsky API documentation.](https://fusionbrain.ai/docs/ru/doc/api-dokumentaciya/)
 
-This `README.md` file offers a basic guide and usage example of your Go package `kandinsky`. You can expand it with additional setup instructions, requirements, and advanced usage examples according to the capabilities of your API client.
 
 ## Structures
 
@@ -161,12 +159,8 @@ Represents the main client for interacting with the Kandinsky API.
 
 ```go
 type Kandinsky struct {
-	// The API key for authenticating requests to the Kandinsky API.
-	key    string
-	// The API secret for authenticating requests to the Kandinsky API.
-	secret string
 	// The current model selected for generating images, represented by the Model structure.
-	model  Model
+	Model  Model
 }
 ```
 
@@ -283,15 +277,27 @@ Creates a new instance of the Kandinsky client.
 - `secret`: The API secret for authentication.
 - Returns a new Kandinsky instance or an error.
 
+### `GetImage`
+
+```go
+func GetImage(key, secret string, params Params) (Image, error)
+```
+
+Creates a new instance of the Image.
+
+- `key`: The API key for authentication.
+- `secret`: The API secret for authentication.
+- `params`: The parameters for image generation.
+- Returns a new Image instance or an error.
+
 ### `SetModel`
 
 ```go
-func (k *Kandinsky) SetModel(url string) error
+func (k *Kandinsky) SetModel() error
 ```
 
 Sets the model to be used by the Kandinsky client.
 
-- `url`:  The URL to send the generation request to.
 - `params`: The parameters for image generation.
 - Returns a UUID struct with the task details or an error.
 
@@ -300,9 +306,8 @@ Sets the model to be used by the Kandinsky client.
 Sends a POST request with parameters to generate an image and returns the UUID.
 
 ```go
-func (k *Kandinsky) GetImageUUID(url string, p Params) (UUID, error)
+func (k *Kandinsky) GetImageUUID(p Params) (UUID, error)
 ```
-- `url`: The URL to send the generation request to.
 - `params`: The parameters for image generation.
 - `Returns` a UUID struct with the task details or an error.
 
@@ -310,9 +315,8 @@ func (k *Kandinsky) GetImageUUID(url string, p Params) (UUID, error)
 ### `CheckImage`
 Checks the status of an image generation task.
 ```go
-func (k *Kandinsky) CheckImage(url string, u UUID) (Image, error)
+func (k *Kandinsky) CheckImage(u UUID) (Image, error)
 ```
-- `url`: The URL to check the task status.
 - `u`: The UUID of the task to check.
 - Returns an Image struct with the generated image details or an error.
 

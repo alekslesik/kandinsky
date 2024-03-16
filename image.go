@@ -19,7 +19,7 @@ type Image struct {
 }
 
 var (
-	ErrEmptyImage = errors.New("kandinsky image is empty")
+	ErrEmptyImage    = errors.New("kandinsky image is empty")
 	ErrEmptyFileName = errors.New("kandinsky file name is empty")
 	ErrEmptyFilePath = errors.New("kandinsky file path is empty")
 )

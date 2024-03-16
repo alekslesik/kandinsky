@@ -37,12 +37,6 @@ const (
 	StatusUnsupportedMediaType = 415
 )
 
-const (
-	URLMODEL = "https://api-key.fusionbrain.ai/key/api/v1/models"
-	URLUUID  = "https://api-key.fusionbrain.ai/key/api/v1/text2image/run"
-	URLCHECK = "https://api-key.fusionbrain.ai/key/api/v1/text2image/status/"
-)
-
 // Generate image styles
 const (
 	// Kandinsky style
@@ -56,18 +50,25 @@ const (
 )
 
 type Kandinsky interface {
-	SetModel(url string) (int, error)
-	GetImageUUID(url string, p Params) (UUID, error)
-	CheckImage(url string, u UUID) (Image, error)
+	SetModel() (int, error)
+	GetImageUUID(p Params) (UUID, error)
+	CheckImage(u UUID) (Image, error)
 }
 
-// Kandinsky struct, all fields are required
+// Kand struct, all fields are required
 // https://fusionbrain.ai/docs/ru/doc/api-dokumentaciya/
 type Kand struct {
 	// The API key for authenticating requests to the Kandinsky API.
 	key string
 	// The API secret for authenticating requests to the Kandinsky API.
 	secret string
+	// Authenticate URL for getting Kandinsky API model.
+	authURL string
+	// Generate URL for getting image UUID.
+	genURL string
+	// Check URL for getting Image instance
+	checkURL string
+
 	// The current Model selected for generating images, represented by the Model structure.
 	Model Model
 }
@@ -176,9 +177,12 @@ func New(key, secret string) (Kandinsky, error) {
 	}
 
 	k := &Kand{
-		key:    key,
-		secret: secret,
-		Model:  Model{},
+		key:      key,
+		secret:   secret,
+		authURL:  "https://api-key.fusionbrain.ai/key/api/v1/models",
+		genURL:   "https://api-key.fusionbrain.ai/key/api/v1/text2image/run",
+		checkURL: "https://api-key.fusionbrain.ai/key/api/v1/text2image/status/",
+		Model:    Model{},
 	}
 
 	return k, nil
@@ -204,17 +208,17 @@ func GetImage(key, secret string, params Params) (Image, error) {
 		return i, err
 	}
 
-	_, err = k.SetModel(URLMODEL)
+	_, err = k.SetModel()
 	if err != nil {
 		return i, err
 	}
 
-	u, err := k.GetImageUUID(URLUUID, params)
+	u, err := k.GetImageUUID(params)
 	if err != nil {
 		return i, err
 	}
 
-	i, err = k.CheckImage(URLCHECK, u)
+	i, err = k.CheckImage(u)
 	if err != nil {
 		return i, err
 	}
@@ -234,13 +238,9 @@ func GetImage(key, secret string, params Params) (Image, error) {
 //	}
 //
 // ]
-func (k *Kand) SetModel(url string) (int, error) {
-	if url == "" {
-		return 0, ErrEmptyURL
-	}
-
+func (k *Kand) SetModel() (int, error) {
 	// create GET request, set auth headers
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	req, err := http.NewRequest(http.MethodGet, k.authURL, nil)
 	if err != nil {
 		return 0, err
 	}
@@ -283,7 +283,7 @@ func (k *Kand) SetModel(url string) (int, error) {
 //		"uuid": "string",
 //		"status": "INITIAL"
 //	}
-func (k *Kand) GetImageUUID(url string, p Params) (UUID, error) {
+func (k *Kand) GetImageUUID(p Params) (UUID, error) {
 	u := UUID{}
 
 	// set default
@@ -347,12 +347,8 @@ func (k *Kand) GetImageUUID(url string, p Params) (UUID, error) {
 }
 
 // CheckImage image status using image UUID
-func (k *Kand) CheckImage(url string, u UUID) (Image, error) {
+func (k *Kand) CheckImage(u UUID) (Image, error) {
 	image := Image{}
-
-	if url == "" {
-		return image, ErrEmptyURL
-	}
 
 	if u.ID == "" {
 		return image, ErrEmptyUUID
@@ -360,7 +356,7 @@ func (k *Kand) CheckImage(url string, u UUID) (Image, error) {
 
 	for {
 		// create GET request
-		req, err := http.NewRequest(http.MethodGet, url+u.ID, nil)
+		req, err := http.NewRequest(http.MethodGet, k.checkURL+u.ID, nil)
 		if err != nil {
 			return image, err
 		}

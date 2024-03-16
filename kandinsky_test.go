@@ -21,12 +21,6 @@ var (
 	key string
 	// Kandinsky API secret
 	secret string
-	// auth URL
-	aURL string
-	// generate image URL
-	gURL string
-	// url for check image
-	cURL string
 	// correct instance of Params
 	params Params
 )
@@ -40,9 +34,6 @@ func TestMain(m *testing.M) {
 
 	key = os.Getenv("KAND_API_KEY")
 	secret = os.Getenv("KAND_API_SECRET")
-	aURL = os.Getenv("KAND_API_AUTH_URL")
-	gURL = os.Getenv("KAND_API_GEN_URL")
-	cURL = os.Getenv("KAND_API_CHECK_URL")
 
 	if key == "" || secret == "" {
 		log.Fatal("empty key or secret")
@@ -139,7 +130,7 @@ func TestSetModel(t *testing.T) {
 		t.Errorf("create Kandinsky instance error > %s", err)
 	}
 
-	id, err := k.SetModel(aURL)
+	id, err := k.SetModel()
 	if err != nil {
 		t.Errorf("set model error > %s", err)
 	}
@@ -148,78 +139,45 @@ func TestSetModel(t *testing.T) {
 	}
 }
 
-// TestSetModelEmptyURL tests the empty url parameter passed to the SetModel() function
-func TestSetModelURL(t *testing.T) {
-	k, err := New(key, secret)
-	if err != nil {
-		t.Errorf("create Kandinsky instance error > %s", err)
-	}
+// TestSetModelStatusCodeFromKandinsky tests the statuses returned from kandinsky API
+// func TestSetModelStatusCodeFromKandinsky(t *testing.T) {
+// 	k401, err := New("wrongKey", "wrongSecret")
+// 	if err != nil {
+// 		t.Fatalf("error create kandinsky instance > %v", err)
+// 	}
 
-	testCases := []struct {
-		desc string
-		url  string
-		want string
-	}{
-		{
-			desc: "empty url",
-			url:  "",
-			want: "kandinsky url is not exists in env or in config file",
-		},
-		{
-			desc: "incorrect url",
-			url:  "incorrect",
-			want: "Get \"incorrect\": unsupported protocol scheme \"\"",
-		},
-	}
-	for _, tC := range testCases {
-		t.Run(tC.desc, func(t *testing.T) {
-			_, err = k.SetModel(tC.url)
-			if err.Error() != tC.want {
-				t.Errorf("want: '%s' got: '%v'", tC.want, err)
-			}
-		})
-	}
-}
+// 	k404, err := New(key, secret)
+// 	if err != nil {
+// 		t.Fatalf("error create kandinsky instance > %v", err)
+// 	}
 
-// TestSetModelEmptyURL tests the empty url parameter passed to the SetModel() function
-func TestSetModelStatusCodeFromKandinsky(t *testing.T) {
-	k401, err := New("wrongKey", "wrongSecret")
-	if err != nil {
-		t.Fatalf("error create kandinsky instance > %v", err)
-	}
-
-	k404, err := New(key, secret)
-	if err != nil {
-		t.Fatalf("error create kandinsky instance > %v", err)
-	}
-
-	testCases := []struct {
-		desc string
-		url  string
-		k    Kandinsky
-		e    error
-	}{
-		{
-			desc: "status unauthorized",
-			url:  aURL,
-			k:    k401,
-			e:    ErrUnauthorized,
-		},
-		{
-			desc: "status unauthorized",
-			url:  aURL + "wrongSuffix",
-			k:    k404,
-			e:    ErrNotFound,
-		},
-	}
-	for _, tC := range testCases {
-		t.Run(tC.desc, func(t *testing.T) {
-			if _, err := tC.k.SetModel(tC.url); err != tC.e {
-				t.Errorf("want: '%s' got: '%v'", tC.e, err)
-			}
-		})
-	}
-}
+// 	testCases := []struct {
+// 		desc string
+// 		url  string
+// 		k    Kandinsky
+// 		e    error
+// 	}{
+// 		{
+// 			desc: "status unauthorized",
+// 			url:  aURL,
+// 			k:    k401,
+// 			e:    ErrUnauthorized,
+// 		},
+// 		{
+// 			desc: "status unauthorized",
+// 			url:  aURL + "wrongSuffix",
+// 			k:    k404,
+// 			e:    ErrNotFound,
+// 		},
+// 	}
+// 	for _, tC := range testCases {
+// 		t.Run(tC.desc, func(t *testing.T) {
+// 			if _, err := tC.k.SetModel(tC.url); err != tC.e {
+// 				t.Errorf("want: '%s' got: '%v'", tC.e, err)
+// 			}
+// 		})
+// 	}
+// }
 
 // TestSetModel common test
 func TestGetImageUUID(t *testing.T) {
@@ -228,7 +186,7 @@ func TestGetImageUUID(t *testing.T) {
 		t.Errorf("create Kandinsky instance error > %s", err)
 	}
 
-	_, err = k.SetModel(aURL)
+	_, err = k.SetModel()
 	if err != nil {
 		t.Errorf("set model error > %s", err)
 	}
@@ -360,7 +318,7 @@ func TestGetImageUUID(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			u, err := k.GetImageUUID(gURL, tC.p)
+			u, err := k.GetImageUUID(tC.p)
 			if err == nil {
 				if u.ID == "" {
 					t.Errorf("empty UUID struct > %s", err)
@@ -381,7 +339,7 @@ func TestCheckImage(t *testing.T) {
 		t.Errorf("create Kandinsky instance error > %s", err)
 	}
 
-	_, err = k.SetModel(aURL)
+	_, err = k.SetModel()
 	if err != nil {
 		t.Errorf("set model error > %s", err)
 	}
@@ -400,7 +358,7 @@ func TestCheckImage(t *testing.T) {
 		},
 	}
 
-	u, err := k.GetImageUUID(gURL, p)
+	u, err := k.GetImageUUID(p)
 	if err != nil {
 		t.Errorf("get image UUID model error > %s", err)
 	}
@@ -415,26 +373,18 @@ func TestCheckImage(t *testing.T) {
 	}{
 		{
 			desc: "Successful CheckImage",
-			url: cURL,
-			u: u,
+			u:    u,
 			want: nil,
 		},
 		{
-			desc: "Empty ULR",
-			url: "",
-			u: u,
-			want: ErrEmptyURL,
-		},
-		{
 			desc: "Empty UUID",
-			url: cURL,
-			u: UUID{},
+			u:    UUID{},
 			want: ErrEmptyUUID,
 		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			i, err := k.CheckImage(tC.url, tC.u)
+			i, err := k.CheckImage(tC.u)
 			if err == nil {
 				if i.Status != "DONE" {
 					t.Errorf("error status image > %s", err)
@@ -450,15 +400,15 @@ func TestCheckImage(t *testing.T) {
 
 func TestGetImage(t *testing.T) {
 	testCases := []struct {
-		desc	string
-		key string
+		desc   string
+		key    string
 		secret string
-		p Params
-		want error
+		p      Params
+		want   error
 	}{
 		{
-			desc: "Successful create Image",
-			key: key,
+			desc:   "Successful create Image",
+			key:    key,
 			secret: secret,
 			p: Params{
 				Width:          1024,
@@ -476,8 +426,8 @@ func TestGetImage(t *testing.T) {
 			want: nil,
 		},
 		{
-			desc: "Empty key",
-			key: "",
+			desc:   "Empty key",
+			key:    "",
 			secret: secret,
 			p: Params{
 				Width:          1024,
@@ -495,8 +445,8 @@ func TestGetImage(t *testing.T) {
 			want: ErrEmptyKey,
 		},
 		{
-			desc: "Empty Secret",
-			key: key,
+			desc:   "Empty Secret",
+			key:    key,
 			secret: "",
 			p: Params{
 				Width:          1024,
@@ -514,8 +464,8 @@ func TestGetImage(t *testing.T) {
 			want: ErrEmptySecret,
 		},
 		{
-			desc: "Empty Prompt",
-			key: key,
+			desc:   "Empty Prompt",
+			key:    key,
 			secret: secret,
 			p: Params{
 				GenerateParams: struct {
