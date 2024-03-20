@@ -12,11 +12,11 @@ func TestToByte(t *testing.T) {
 		t.Errorf("create image error > %s", err)
 	}
 
-	emptyImage := Image{}
+	emptyImage := new(Image)
 
 	testCases := []struct {
 		desc string
-		i    Image
+		i    *Image
 		want error
 	}{
 		{
@@ -53,11 +53,11 @@ func TestToFile(t *testing.T) {
 		t.Errorf("create image error > %s", err)
 	}
 
-	emptyImage := Image{}
+	emptyImage := new(Image)
 
 	testCases := []struct {
 		desc string
-		i    Image
+		i    *Image
 		want error
 	}{
 		{
@@ -98,13 +98,13 @@ func TestSavePNGTo(t *testing.T) {
 		t.Errorf("create image error > %s", err)
 	}
 
-	emptyImage := Image{}
+	emptyImage := new(Image)
 
 	testCases := []struct {
 		desc string
 		name string
 		path string
-		i    Image
+		i    *Image
 		want error
 	}{
 		{
@@ -161,13 +161,13 @@ func TestSaveJPGTo(t *testing.T) {
 		t.Errorf("create image error > %s", err)
 	}
 
-	emptyImage := Image{}
+	emptyImage := new(Image)
 
 	testCases := []struct {
 		desc string
 		name string
 		path string
-		i    Image
+		i    *Image
 		want error
 	}{
 		{

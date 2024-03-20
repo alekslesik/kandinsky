@@ -368,7 +368,7 @@ func TestCheckImage(t *testing.T) {
 	testCases := []struct {
 		desc string
 		url  string
-		u    UUID
+		u    *UUID
 		want error
 	}{
 		{
@@ -378,7 +378,7 @@ func TestCheckImage(t *testing.T) {
 		},
 		{
 			desc: "Empty UUID",
-			u:    UUID{},
+			u:    &UUID{},
 			want: ErrEmptyUUID,
 		},
 	}
