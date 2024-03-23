@@ -35,13 +35,13 @@ func TestToByte(t *testing.T) {
 			b, err := tC.i.ToByte()
 			if err == nil {
 				if len(b) == 0 {
-					t.Errorf("%s: len of byte Image is 0 > %s",tC.desc, err)
+					t.Errorf("%s: len of byte Image is 0 > %s", tC.desc, err)
 				}
 			}
 
 			if err != nil {
 				if err != tC.want {
-					t.Errorf("%s: want: %s, got: %s", tC.desc,tC.want, err)
+					t.Errorf("%s: want: %s, got: %s", tC.desc, tC.want, err)
 				}
 			}
 		})
@@ -79,7 +79,7 @@ func TestToFile(t *testing.T) {
 			if err == nil {
 				stat, err := f.Stat()
 				if err != nil {
-					t.Errorf("%s: get file stat error 0 > %s", tC.desc,err)
+					t.Errorf("%s: get file stat error 0 > %s", tC.desc, err)
 				}
 				if stat.Size() == 0 {
 					t.Errorf("%s: size of file is 0 > %s", tC.desc, err)
