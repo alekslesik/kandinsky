@@ -143,8 +143,6 @@ type UUID struct {
 	ID string `json:"uuid"`
 	// The status of the task, e.g., "INITIAL".
 	Status string `json:"status"`
-	// Censored or not query
-	Censored string `json:"censored"`
 }
 
 // ErrResponse from Kandinsky API
@@ -223,7 +221,7 @@ func GetImage(key, secret string, params Params) (*Image, error) {
 
 	i, err = k.CheckImage(u)
 	if err != nil {
-		return i, err
+		return nil, err
 	}
 
 	return i, nil
@@ -401,13 +399,12 @@ func (k *Kand) CheckImage(u *UUID) (*Image, error) {
 		}
 
 		if image.Status == "DONE" {
+			if image.Censored {
+				return nil, ErrCensored
+			}
 			return image, nil
 		} else if image.Status == "FAIL" {
 			return nil, ErrTaskNotCompleted
-		}
-
-		if image.Censored {
-			return nil, ErrCensored
 		}
 
 		time.Sleep(time.Second * 10)

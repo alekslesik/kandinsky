@@ -35,11 +35,13 @@ func TestToByte(t *testing.T) {
 			b, err := tC.i.ToByte()
 			if err == nil {
 				if len(b) == 0 {
-					t.Errorf("len of byte Image is 0 > %s", err)
+					t.Errorf("%s: len of byte Image is 0 > %s",tC.desc, err)
 				}
-			} else {
+			}
+
+			if err != nil {
 				if err != tC.want {
-					t.Errorf("want: %s, got: %s", tC.want, err)
+					t.Errorf("%s: want: %s, got: %s", tC.desc,tC.want, err)
 				}
 			}
 		})
@@ -77,14 +79,16 @@ func TestToFile(t *testing.T) {
 			if err == nil {
 				stat, err := f.Stat()
 				if err != nil {
-					t.Errorf("get file stat error 0 > %s", err)
+					t.Errorf("%s: get file stat error 0 > %s", tC.desc,err)
 				}
 				if stat.Size() == 0 {
-					t.Errorf("size of file is 0 > %s", err)
+					t.Errorf("%s: size of file is 0 > %s", tC.desc, err)
 				}
-			} else {
+			}
+
+			if err != nil {
 				if err != tC.want {
-					t.Errorf("want: %s, got: %s", tC.want, err)
+					t.Errorf("%s: want: %s, got: %s", tC.desc, tC.want, err)
 				}
 			}
 		})
@@ -143,11 +147,13 @@ func TestSavePNGTo(t *testing.T) {
 			if err == nil {
 				// check file exists
 				if _, err := os.Stat(tC.path + tC.name + ext); err != nil {
-					t.Errorf("file %s not created > %s", tC.name, err)
+					t.Errorf("%s: file %s not created > %s", tC.desc, tC.name, err)
 				}
-			} else {
+			}
+
+			if err != nil {
 				if err != tC.want {
-					t.Errorf("want: %s, got: %s", tC.want, err)
+					t.Errorf("%s: want: %s, got: %s", tC.desc, tC.want, err)
 				}
 			}
 		})
@@ -204,14 +210,14 @@ func TestSaveJPGTo(t *testing.T) {
 			err := tC.i.SaveJPGTo(tC.name, tC.path)
 			ext := ".jpg"
 			if err == nil {
-				// check file exists
-
 				if _, err := os.Stat(tC.path + tC.name + ext); err != nil {
-					t.Errorf("file %s not created > %s", tC.name, err)
+					t.Errorf("%s: file %s not created > %s", tC.desc, tC.name, err)
 				}
-			} else {
+			}
+
+			if err != nil {
 				if err != tC.want {
-					t.Errorf("want: %s, got: %s", tC.want, err)
+					t.Errorf("%s: want: %s, got: %s", tC.desc, tC.want, err)
 				}
 			}
 		})

@@ -99,24 +99,24 @@ func TestNew(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testCases {
-		t.Run(tc.desc, func(t *testing.T) {
-			k, err := New(tc.key, tc.secret)
-			if err != tc.err {
-				t.Errorf("%s: want error '%v', got '%v'", tc.desc, tc.err, err)
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			k, err := New(tC.key, tC.secret)
+			if err != tC.err {
+				t.Errorf("%s: want error '%v', got '%v'", tC.desc, tC.err, err)
 				return
 			}
 
 			// Check type
-			if tc.kand == nil {
+			if tC.kand == nil {
 				if k != nil {
-					t.Errorf("%s: want nil result, got non-nil result", tc.desc)
+					t.Errorf("%s: want nil result, got non-nil result", tC.desc)
 				}
 			} else {
-				expectedType := reflect.TypeOf(tc.kand)
+				expectedType := reflect.TypeOf(tC.kand)
 				resultType := reflect.TypeOf(k)
 				if resultType != expectedType {
-					t.Errorf("%s: want type '%s', got type '%s'", tc.desc, expectedType, resultType)
+					t.Errorf("%s: want type '%s', got type '%s'", tC.desc, expectedType, resultType)
 				}
 			}
 		})
@@ -281,11 +281,13 @@ func TestGetImageUUID(t *testing.T) {
 			u, err := k.GetImageUUID(tC.p)
 			if err == nil {
 				if u.ID == "" {
-					t.Errorf("empty UUID struct > %s", err)
+					t.Errorf("%s: empty UUID struct > %s", tC.desc, err)
 				}
-			} else {
+			}
+
+			if err != nil {
 				if !strings.Contains(err.Error(), tC.want) {
-					t.Errorf("want: %s, got: %s", tC.want, err)
+					t.Errorf("%s: want: %s, got: %s", tC.desc, tC.want, err)
 				}
 			}
 		})
@@ -333,7 +335,7 @@ func TestCheckImage(t *testing.T) {
 		GenerateParams: struct {
 			Query string "json:\"query\""
 		}{
-			Query: "black cat",
+			Query: "murder",
 		},
 	}
 
@@ -371,11 +373,13 @@ func TestCheckImage(t *testing.T) {
 			i, err := k.CheckImage(tC.u)
 			if err == nil {
 				if i.Status != "DONE" {
-					t.Errorf("error status image > %s", err)
+					t.Errorf("%s: error status image > %s", tC.desc, err)
 				}
-			} else {
+			}
+
+			if err != nil {
 				if err != tC.want {
-					t.Errorf("want: %s, got: %s", tC.want, err)
+					t.Errorf("%s: want: %s, got: %s", tC.desc, tC.want, err)
 				}
 			}
 		})
@@ -466,11 +470,14 @@ func TestGetImage(t *testing.T) {
 			i, err := GetImage(tC.key, tC.secret, tC.p)
 			if err == nil {
 				if i.UUID == "" {
-					t.Errorf("Image instance is empty > %v", i)
+					t.Errorf("%s: Image instance is empty > %v", tC.desc, i)
 				}
 			}
-			if err != tC.want {
-				t.Errorf("want: '%s' got: '%v'", tC.want, err)
+
+			if err != nil {
+				if err != tC.want {
+					t.Errorf("%s: want: '%s' got: '%v'", tC.desc, tC.want, err)
+				}
 			}
 		})
 	}
