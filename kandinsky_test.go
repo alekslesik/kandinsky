@@ -139,46 +139,6 @@ func TestSetModel(t *testing.T) {
 	}
 }
 
-// TestSetModelStatusCodeFromKandinsky tests the statuses returned from kandinsky API
-// func TestSetModelStatusCodeFromKandinsky(t *testing.T) {
-// 	k401, err := New("wrongKey", "wrongSecret")
-// 	if err != nil {
-// 		t.Fatalf("error create kandinsky instance > %v", err)
-// 	}
-
-// 	k404, err := New(key, secret)
-// 	if err != nil {
-// 		t.Fatalf("error create kandinsky instance > %v", err)
-// 	}
-
-// 	testCases := []struct {
-// 		desc string
-// 		url  string
-// 		k    Kandinsky
-// 		e    error
-// 	}{
-// 		{
-// 			desc: "status unauthorized",
-// 			url:  aURL,
-// 			k:    k401,
-// 			e:    ErrUnauthorized,
-// 		},
-// 		{
-// 			desc: "status unauthorized",
-// 			url:  aURL + "wrongSuffix",
-// 			k:    k404,
-// 			e:    ErrNotFound,
-// 		},
-// 	}
-// 	for _, tC := range testCases {
-// 		t.Run(tC.desc, func(t *testing.T) {
-// 			if _, err := tC.k.SetModel(tC.url); err != tC.e {
-// 				t.Errorf("want: '%s' got: '%v'", tC.e, err)
-// 			}
-// 		})
-// 	}
-// }
-
 // TestSetModel common test
 func TestGetImageUUID(t *testing.T) {
 	k, err := New(key, secret)
@@ -363,6 +323,25 @@ func TestCheckImage(t *testing.T) {
 		t.Errorf("get image UUID model error > %s", err)
 	}
 
+	pCens := Params{
+		Width:          1024,
+		Height:         1024,
+		NumImages:      1,
+		Type:           "GENERATE",
+		Style:          "KANDINSKY",
+		NegativePrompt: "",
+		GenerateParams: struct {
+			Query string "json:\"query\""
+		}{
+			Query: "black cat",
+		},
+	}
+
+	uCens, err := k.GetImageUUID(pCens)
+	if err != nil {
+		t.Errorf("get image UUID model error > %s", err)
+	}
+
 	time.Sleep(time.Second * 15)
 
 	testCases := []struct {
@@ -380,6 +359,11 @@ func TestCheckImage(t *testing.T) {
 			desc: "Empty UUID",
 			u:    &UUID{},
 			want: ErrEmptyUUID,
+		},
+		{
+			desc: "Censored UUID",
+			u:    uCens,
+			want: ErrCensored,
 		},
 	}
 	for _, tC := range testCases {

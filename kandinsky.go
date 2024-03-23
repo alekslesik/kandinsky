@@ -137,7 +137,6 @@ type Params struct {
 //	{
 //		"uuid": "string",
 //		"status": "INITIAL"
-//		"censored": "false"
 //	}
 type UUID struct {
 	// The UUID of the generated image task.
@@ -347,14 +346,17 @@ func (k *Kand) GetImageUUID(p Params) (*UUID, error) {
 		return nil, err
 	}
 
-	if u.Censored == "true" {
-		return nil, ErrCensored
-	}
-
 	return u, nil
 }
 
 // CheckImage image status using image UUID
+//
+//		{
+//			"uuid": "string",
+//			"status": "INITIAL"
+//	   "images": [ "/9j/4A..."],
+//	   "censored": false
+//		}
 func (k *Kand) CheckImage(u *UUID) (*Image, error) {
 	image := new(Image)
 
@@ -402,6 +404,10 @@ func (k *Kand) CheckImage(u *UUID) (*Image, error) {
 			return image, nil
 		} else if image.Status == "FAIL" {
 			return nil, ErrTaskNotCompleted
+		}
+
+		if image.Censored {
+			return nil, ErrCensored
 		}
 
 		time.Sleep(time.Second * 10)

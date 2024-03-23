@@ -121,6 +121,7 @@ The `kandinsky` package defines several errors to handle various scenarios of in
 - `ErrEmptyImage`: The Image instance is empty.
 - `ErrEmptyFileName`: The name to save the file  is empty.
 - `ErrEmptyFilePath`: The path to save the file is empty.
+- `ErrCensored`: The generate image is censored and useless.
 
 These errors provide a way to handle specific issues encountered when interacting with the Kandinsky API, allowing for more granular error handling and troubleshooting in client applications.
 
