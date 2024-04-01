@@ -121,7 +121,9 @@ The `kandinsky` package defines several errors to handle various scenarios of in
 - `ErrEmptyImage`: The Image instance is empty.
 - `ErrEmptyFileName`: The name to save the file  is empty.
 - `ErrEmptyFilePath`: The path to save the file is empty.
-- `ErrCensored`: The generate image is censored and useless.
+- `ErrCensored`: The generated image is censored and useless.
+- `ErrEmptyBase`: The base64 string is empty.
+- `ErrNotBase64Format`: The string is not in base64 format.
 
 These errors provide a way to handle specific issues encountered when interacting with the Kandinsky API, allowing for more granular error handling and troubleshooting in client applications.
 
@@ -330,6 +332,15 @@ func (i *Image) ToByte() ([]byte, error)
 Returns:
 - A byte slice representation of the image.
 - An error if the Base64 decoding fails.
+
+### `AddBase64`
+Add to Image instance base64 formatted image.
+
+```go
+func (i *Image) AddBase64(base string) error
+```
+Returns:
+- An error if the Base64 format is wrong.
 
 ### `ToFile`
 Converts image to an os.File.

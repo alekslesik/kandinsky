@@ -287,7 +287,7 @@ func TestGetImageUUID(t *testing.T) {
 
 			if err != nil {
 				if !strings.Contains(err.Error(), tC.want) {
-					t.Errorf("%s: want: %s, got: %s", tC.desc, tC.want, err)
+					t.Errorf("\n%s:\n\twant:\n\t\t%s, \n\tgot:\n\t\t%s\n", tC.desc, tC.want, err)
 				}
 			}
 		})
@@ -379,7 +379,7 @@ func TestCheckImage(t *testing.T) {
 
 			if err != nil {
 				if err != tC.want {
-					t.Errorf("%s: want: %s, got: %s", tC.desc, tC.want, err)
+					t.Errorf("\n%s:\n\twant:\n\t\t%s, \n\tgot:\n\t\t%s\n", tC.desc, tC.want, err)
 				}
 			}
 		})
@@ -476,7 +476,7 @@ func TestGetImage(t *testing.T) {
 
 			if err != nil {
 				if err != tC.want {
-					t.Errorf("%s: want: '%s' got: '%v'", tC.desc, tC.want, err)
+					t.Errorf("\n%s:\n\twant:\n\t\t%s, \n\tgot:\n\t\t%v\n", tC.desc, tC.want, err)
 				}
 			}
 		})

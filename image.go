@@ -19,10 +19,31 @@ type Image struct {
 }
 
 var (
-	ErrEmptyImage    = errors.New("kandinsky image is empty")
-	ErrEmptyFileName = errors.New("kandinsky file name is empty")
-	ErrEmptyFilePath = errors.New("kandinsky file path is empty")
+	ErrEmptyImage      = errors.New("kandinsky image is empty")
+	ErrEmptyFileName   = errors.New("kandinsky file name is empty")
+	ErrEmptyFilePath   = errors.New("kandinsky file path is empty")
+	ErrEmptyBase       = errors.New("kandinsky base is empty")
+	ErrNotBase64Format = errors.New("kandinsky string is not base64 format")
 )
+
+// AddBase64 add base64 to Image.
+func (i *Image) AddBase64(base string) error {
+	if base == "" {
+		return ErrEmptyBase
+	}
+
+	if !isValidBase64(base) {
+		return ErrNotBase64Format
+	}
+
+	if len(i.Images) == 0 {
+		i.Images = append(i.Images, "")
+	}
+
+	i.Images[0] = base
+
+	return nil
+}
 
 // ToByte Converts the image to a byte slice.
 func (i *Image) ToByte() ([]byte, error) {
@@ -134,4 +155,10 @@ func (i *Image) SaveJPGTo(name, path string) error {
 	}
 
 	return nil
+}
+
+// isValidBase64 check that s is base64
+func isValidBase64(s string) bool {
+	_, err := base64.StdEncoding.DecodeString(s)
+	return err == nil
 }
