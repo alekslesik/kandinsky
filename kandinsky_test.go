@@ -103,20 +103,20 @@ func TestNew(t *testing.T) {
 		t.Run(tC.desc, func(t *testing.T) {
 			k, err := New(tC.key, tC.secret)
 			if err != tC.err {
-				t.Errorf("%s: want error '%v', got '%v'", tC.desc, tC.err, err)
+				t.Errorf("\n%s:\n\twant:\n\t\t\"%s\" \n\tgot:\n\t\t\"%s\"\n", tC.desc, tC.err, err)
 				return
 			}
 
 			// Check type
 			if tC.kand == nil {
 				if k != nil {
-					t.Errorf("%s: want nil result, got non-nil result", tC.desc)
+					t.Errorf("\n%s:\n\twant nil result, got non-nil result", tC.desc)
 				}
 			} else {
 				expectedType := reflect.TypeOf(tC.kand)
 				resultType := reflect.TypeOf(k)
 				if resultType != expectedType {
-					t.Errorf("%s: want type '%s', got type '%s'", tC.desc, expectedType, resultType)
+					t.Errorf("\n%s:\n\twant:\n\t\t\"%s\" \n\tgot:\n\t\t\"%s\"\n", tC.desc, expectedType, resultType)
 				}
 			}
 		})
@@ -281,13 +281,13 @@ func TestGetImageUUID(t *testing.T) {
 			u, err := k.GetImageUUID(tC.p)
 			if err == nil {
 				if u.ID == "" {
-					t.Errorf("%s: empty UUID struct > %s", tC.desc, err)
+					t.Errorf("\n%s: empty UUID struct > %s", tC.desc, err)
 				}
 			}
 
 			if err != nil {
 				if !strings.Contains(err.Error(), tC.want) {
-					t.Errorf("\n%s:\n\twant:\n\t\t%s, \n\tgot:\n\t\t%s\n", tC.desc, tC.want, err)
+					t.Errorf("\n%s:\n\twant:\n\t\t\"%s\" \n\tgot:\n\t\t\"%s\"\n", tC.desc, tC.want, err)
 				}
 			}
 		})
@@ -373,13 +373,13 @@ func TestCheckImage(t *testing.T) {
 			i, err := k.CheckImage(tC.u)
 			if err == nil {
 				if i.Status != "DONE" {
-					t.Errorf("%s: error status image > %s", tC.desc, err)
+					t.Errorf("\n%s: error status image > %s", tC.desc, err)
 				}
 			}
 
 			if err != nil {
 				if err != tC.want {
-					t.Errorf("\n%s:\n\twant:\n\t\t%s, \n\tgot:\n\t\t%s\n", tC.desc, tC.want, err)
+					t.Errorf("\n%s:\n\twant:\n\t\t\"%s\" \n\tgot:\n\t\t\"%s\"\n", tC.desc, tC.want, err)
 				}
 			}
 		})
@@ -476,7 +476,7 @@ func TestGetImage(t *testing.T) {
 
 			if err != nil {
 				if err != tC.want {
-					t.Errorf("\n%s:\n\twant:\n\t\t%s, \n\tgot:\n\t\t%v\n", tC.desc, tC.want, err)
+					t.Errorf("\n%s:\n\twant:\n\t\t\"%s\" \n\tgot:\n\t\t\"%s\"\n", tC.desc, tC.want, err)
 				}
 			}
 		})

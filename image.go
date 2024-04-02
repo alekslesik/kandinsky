@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"os"
+	"strings"
 )
 
 // Image represents the image data returned by the Kandinsky API.
@@ -103,7 +104,9 @@ func (i *Image) SavePNGTo(name, path string) error {
 
 	ext := ".png"
 
-	f, err := os.OpenFile(path+name+ext, os.O_CREATE|os.O_RDWR|os.O_TRUNC, os.ModePerm)
+	trimName := strings.Trim(path+name+ext, "\"")
+
+	f, err := os.OpenFile(trimName, os.O_CREATE|os.O_RDWR|os.O_TRUNC, os.ModePerm)
 	if err != nil {
 		return err
 	}
@@ -161,4 +164,27 @@ func (i *Image) SaveJPGTo(name, path string) error {
 func isValidBase64(s string) bool {
 	_, err := base64.StdEncoding.DecodeString(s)
 	return err == nil
+}
+
+// trimName trims quotes, spaces and dashes
+func trimName(name string) string {
+	trimFunc := make(map[string]func(name string) string)
+
+	trimFunc["quotes"] = func(name string) string {
+		return strings.Trim(name, "\"")
+	}
+
+	trimFunc["spaces"] = func(name string) string {
+		return strings.Trim(name, " ")
+	}
+
+	trimFunc["dash"] = func(name string) string {
+		return strings.Trim(name, "-")
+	}
+
+	for _, v := range trimFunc {
+		name = v(name)
+	}
+
+	return name
 }

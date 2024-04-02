@@ -39,7 +39,7 @@ func TestAddBase64(t *testing.T) {
 		t.Run(tC.desc, func(t *testing.T) {
 			err := tC.i.AddBase64(tC.base)
 			if err != tC.want {
-				t.Errorf("\n%s:\n\twant:\n\t\t%s, \n\tgot:\n\t\t%s\n", tC.desc, tC.want, err)
+				t.Errorf("\n%s:\n\twant:\n\t\t\"%s\" \n\tgot:\n\t\t\"%s\"\n", tC.desc, tC.want, err)
 			}
 		})
 	}
@@ -81,7 +81,7 @@ func TestToByte(t *testing.T) {
 
 			if err != nil {
 				if err != tC.want {
-					t.Errorf("\n%s:\n\twant:\n\t\t%s, \n\tgot:\n\t\t%s\n", tC.desc, tC.want, err)
+					t.Errorf("\n%s:\n\twant:\n\t\t\"%s\" \n\tgot:\n\t\t\"%s\"\n", tC.desc, tC.want, err)
 				}
 			}
 		})
@@ -128,7 +128,7 @@ func TestToFile(t *testing.T) {
 
 			if err != nil {
 				if err != tC.want {
-					t.Errorf("\n%s:\n\twant:\n\t\t%s, \n\tgot:\n\t\t%s\n", tC.desc, tC.want, err)
+					t.Errorf("\n%s:\n\twant:\n\t\t\"%s\" \n\tgot:\n\t\t\"%s\"\n", tC.desc, tC.want, err)
 				}
 			}
 		})
@@ -187,13 +187,13 @@ func TestSavePNGTo(t *testing.T) {
 			if err == nil {
 				// check file exists
 				if _, err := os.Stat(tC.path + tC.name + ext); err != nil {
-					t.Errorf("\n%s:\n\twant:\n\t\t%s, \n\tgot:\n\t\t%s\n", tC.desc, tC.name, err)
+					t.Errorf("\n%s:\n\twant:\n\t\t\"%s\" \n\tgot:\n\t\t\"%s\"\n", tC.desc, tC.name, err)
 				}
 			}
 
 			if err != nil {
 				if err != tC.want {
-					t.Errorf("\n%s:\n\twant:\n\t\t%s, \n\tgot:\n\t\t%s\n", tC.desc, tC.want, err)
+					t.Errorf("\n%s:\n\twant:\n\t\t\"%s\" \n\tgot:\n\t\t\"%s\"\n", tC.desc, tC.want, err)
 				}
 			}
 		})
@@ -251,14 +251,48 @@ func TestSaveJPGTo(t *testing.T) {
 			ext := ".jpg"
 			if err == nil {
 				if _, err := os.Stat(tC.path + tC.name + ext); err != nil {
-					t.Errorf("\n%s:\n\twant:\n\t\t%s, \n\tgot:\n\t\t%s\n", tC.desc, tC.name, err)
+					t.Errorf("\n%s:\n\twant:\n\t\t\"%s\" \n\tgot:\n\t\t\"%s\"\n", tC.desc, tC.name, err)
 				}
 			}
 
 			if err != nil {
 				if err != tC.want {
-					t.Errorf("\n%s:\n\twant:\n\t\t%s, \n\tgot:\n\t\t%s\n", tC.desc, tC.want, err)
+					t.Errorf("\n%s:\n\twant:\n\t\t\"%s\" \n\tgot:\n\t\t\"%s\"\n", tC.desc, tC.want, err)
 				}
+			}
+		})
+	}
+}
+
+// TestTrimName test name triming
+func TestTrimName(t *testing.T) {
+	testCases := []struct {
+		desc string
+		name string
+		want string
+	}{
+		{
+			desc: "succefull trimm quotes",
+			name: "\"name\"",
+			want: "name",
+		},
+		{
+			desc: "succefull trimm spaces",
+			name: " name ",
+			want: "name",
+		},
+		{
+			desc: "succefull trimm dashes",
+			name: "-name-",
+			want: "name",
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			n := trimName(tC.name)
+
+			if n != tC.want {
+				t.Errorf("\n%s:\n\twant:\n\t\t\"%s\" \n\tgot:\n\t\t\"%s\"\n", tC.desc, tC.want, n)
 			}
 		})
 	}
